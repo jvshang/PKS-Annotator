@@ -15,7 +15,7 @@ This tool is intended for **Stage 1 annotation**.
 
 ---
 
-## Current Functionality
+## Current Function
 
 The current version of the real-time annotator provides the following functionality:
 
