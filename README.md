@@ -15,6 +15,40 @@ This tool is intended for **Stage 1 annotation**.
 
 ---
 
+## Current Functionality
+
+The current version of the real-time annotator provides the following functionality:
+
+- **Real-time annotation of action-level events**  
+  Records the start and end times of observable actions (e.g. sit-to-stand, walking, turning).
+
+- **Real-time annotation of activity-level events**  
+  Supports higher-level activities (e.g. TUG, daily living activities) that may consist of multiple action-level events.
+
+- **Start / end timestamp recording with duration computation**  
+  Automatically records start and end timestamps for each event and computes event duration.
+
+- **Synchronization event marking**  
+  Allows marking a synchronization point (e.g. clapping) to establish a common temporal reference for aligning annotations with video and wearable sensor data.
+
+- **Keyboard shortcut–based interaction**  
+  Provides keyboard shortcuts to enable fast, low-distraction annotation during experiments.
+
+- **Session-level metadata logging**  
+  Stores session information, annotation labels, and synchronization metadata for downstream analysis.
+
+- **Structured data export**  
+  Exports annotations and metadata in CSV and JSON formats for post-processing.
+
+### Scope (Stage 1)
+
+This annotator is designed for **Stage 1 coarse, real-time annotation only**.  
+Fine-grained kinematic or clinical parameters—such as turning angle, step count,
+angular velocity, or balance-related measures—are **not annotated in this stage**
+and are obtained through offline analysis or wearable sensor data in later stages.
+
+---
+
 ## Requirements
 - Python **3.10 or higher**
 - Tkinter (included with standard Python distributions and conda)
@@ -115,3 +149,5 @@ For a session named `<session>`, the following files are generated:
 - Otherwise, timestamps are **relative to session start**
 
 Absolute timestamps are also stored for cross-device alignment.
+
+---
