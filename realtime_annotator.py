@@ -123,9 +123,9 @@ class RealTimeAnnotatorApp:
 
         self.note_entry = ttk.Entry(notes_frame)
         self.note_entry.pack(fill="x")
-        self.note_entry.insert(0, "")
+        self.note_entry.bind("<Return>", self.attach_note)
 
-        hint = "Hint: Type a note here before starting an event. It will be attached to the next START."
+        hint = "Hint: Type a note and press Enter. It will be attached to the CURRENT active event with timestamp."
         ttk.Label(notes_frame, text=hint).pack(anchor="w", pady=(6, 0))
 
         # Action buttons
@@ -174,6 +174,29 @@ class RealTimeAnnotatorApp:
             # store references
             setattr(self, f"btn_{level}_{label}", btn)
             setattr(self, f"status_{level}_{label}", status)
+
+    def attach_note(self, event=None):
+        text = self.note_entry.get().strip()
+        if not text:
+            return
+
+        t_abs = self.now_abs()
+        t_rel = self.rel_time(t_abs)
+        stamped_note = f"[@t={t_rel:.3f}s] {text}"
+
+        if not self.active:
+            self._log_line(f"NOTE IGNORED (no active event): '{text}'")
+            self.note_entry.delete(0, tk.END)
+            return
+
+        for info in self.active.values():
+            if info["note"]:
+                info["note"] += " | " + stamped_note
+            else:
+                info["note"] = stamped_note
+
+        self._log_line(f"NOTE added: {stamped_note}")
+        self.note_entry.delete(0, tk.END)
 
     def _bind_shortcuts(self):
         # bind all keys in SHORTCUTS
