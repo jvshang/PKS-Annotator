@@ -243,13 +243,16 @@ class RealTimeAnnotatorApp:
     def start_event(self, level: str, label: str):
         t = self.now_abs()
         note = self.note_entry.get().strip()
-        self.active[label] = {"level": level, "start_abs": t, "note": note}
+        self.active[label] = {
+            "level": level,
+            "start_abs": t,
+            "note": ""          
+        }
 
         self._set_ui_active(level, label, True)
-        self._log_line(f"START {level.upper()} | {label} | t_rel={self.rel_time(t):.3f}s | note='{note}'")
-
-        # clear note after attaching to start
-        self.note_entry.delete(0, tk.END)
+        self._log_line(
+            f"START {level.upper()} | {label} | t_rel={self.rel_time(t):.3f}s"
+        )
 
     def stop_event(self, level: str, label: str):
         if label not in self.active:
