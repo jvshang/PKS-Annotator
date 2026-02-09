@@ -1,3 +1,8 @@
+# Real-time Annotation Tool (Stage 1)
+# Author: Jiayu Shang
+# Implemented for Stage 1 in-situ annotation in the PKS project
+# © 2026 Jiayu Shang. Released under the MIT License.
+
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import time

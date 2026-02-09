@@ -1,5 +1,8 @@
 # Real-time Annotation Tool (Stage 1)
 
+## Author
+This tool was implemented by **Jiayu Shang**.
+
 ## Purpose
 This tool is used for **real-time, in-situ annotation** during data collection.
 It supports:
