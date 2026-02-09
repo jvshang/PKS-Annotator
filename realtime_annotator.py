@@ -38,10 +38,10 @@ SHORTCUTS = {
     "Turn": "3",
     "Walk": "4",
     "FoG": "5",
-    "TUG": "q",
-    "Turning-in-place task": "w",
-    "Living room activity": "e",
-    "Kitchen activity": "r",
+    "TUG": "0",
+    "Turning-in-place task": "9",
+    "Living room activity": "8",
+    "Kitchen activity": "7",
 }
 
 
@@ -206,7 +206,12 @@ class RealTimeAnnotatorApp:
     def _bind_shortcuts(self):
         # bind all keys in SHORTCUTS
         for label, key in SHORTCUTS.items():
-            self.root.bind(f"<KeyPress-{key}>", lambda e, l=label: self.toggle_by_label(l))
+            self.root.bind(f"<KeyPress-{key}>", lambda e, l=label: self._shortcut_handler(l))
+
+    def _shortcut_handler(self, label: str):
+        if self.root.focus_get() == self.note_entry:
+            return
+        self.toggle_by_label(label)
 
     def _shortcut_help_text(self) -> str:
         items = []
