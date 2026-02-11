@@ -28,6 +28,7 @@ ACTIVITY_LABELS = [
     "Turning-in-place task",
     "Living room activity",
     "Kitchen activity",
+    "Hall activity",
 ]
 
 # Optional keyboard shortcuts (label -> key)
@@ -42,6 +43,7 @@ SHORTCUTS = {
     "Turning-in-place task": "9",
     "Living room activity": "8",
     "Kitchen activity": "7",
+    "Hall activity": "6",
 }
 
 
