@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: PKS Annotator
+message: "If you use this software in your research, please cite it as below."
+type: software
+authors:
+  - family-names: Shang
+    given-names: Jiayu
+repository-code: https://github.com/jvshang/PKS-Annotator
+license: MIT
+version: 3.0.0
+date-released: 2026-03-03
