@@ -3,3 +3,9 @@
 
 # Exclude JSON files
 *.json
+
+*.DS_Store
+
+*.txt
+
+*.pdf
