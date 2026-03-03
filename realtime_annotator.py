@@ -67,12 +67,16 @@ class RealTimeAnnotatorApp:
         # active: action_label -> {"context": context, "start_abs": t, "note": ""}
         self.active: Dict[str, Dict] = {}
 
+        # File log buffer (detailed, saved to _log.txt)
+        self._file_log: List[str] = []
+
         # Output
         self.output_dir = os.getcwd()
         self.session_name = "session"
 
         # Task navigation state
         self.task_index: int = 0
+        self._task_announced: bool = False
 
         self._build_ui()
         # self._bind_shortcuts()  # shortcuts disabled; re-enable when ready
@@ -179,10 +183,7 @@ class RealTimeAnnotatorApp:
         self.log = tk.Text(log_frame, width=40, wrap="word")
         self.log.pack(fill="both", expand=True)
 
-        self._log_line(
-            "Ready. Mark Sync (Clap) at the beginning for alignment (recommended). "
-            "Current task: " + self.current_context
-        )
+        self._log_ui("Ready. Mark Sync (Clap) at the beginning.")
 
         # Footer hint
         footer = ttk.Frame(self.root, padding=(10, 0, 10, 10))
@@ -220,7 +221,8 @@ class RealTimeAnnotatorApp:
         stamped_note = f"[@t={t_rel:.3f}s] {text}"
 
         if not self.active:
-            self._log_line(f"NOTE IGNORED (no active event): '{text}'")
+            self._log_ui("Note ignored (no active event)")
+            self._log_full(f"NOTE IGNORED (no active event): '{text}'")
             self.note_entry.delete(0, tk.END)
             return
 
@@ -230,7 +232,8 @@ class RealTimeAnnotatorApp:
             else:
                 info["note"] = stamped_note
 
-        self._log_line(f"NOTE added: {stamped_note}")
+        self._log_ui(f"Note: {text}")
+        self._log_full(f"NOTE added: {stamped_note}")
         self.note_entry.delete(0, tk.END)
 
     def _bind_shortcuts(self):
@@ -273,7 +276,8 @@ class RealTimeAnnotatorApp:
         self.sync_var.set(
             f"Sync t0: SET at elapsed {self.rel_time(self.sync_t0_abs):.3f} s (this will show as 0.000s base)"
         )
-        self._log_line("SYNC marked. Relative timestamps now reference this moment (t=0).")
+        self._log_ui("Sync marked  (t = 0)")
+        self._log_full("SYNC marked. Relative timestamps now reference this moment (t=0).")
 
     def prev_task(self):
         if self.task_index > 0:
@@ -290,12 +294,13 @@ class RealTimeAnnotatorApp:
         if self.active:
             for label in list(self.active.keys()):
                 self.stop_event(label)
-            self._log_line("All active events automatically closed due to task switch.")
+            self._log_full("All active events automatically closed due to task switch.")
 
         self.task_index = new_index
+        self._task_announced = False
         self._update_task_ui()
         self._rebuild_action_buttons()
-        self._log_line(f"Task switched to: {self.current_context}")
+        self._log_full(f"Task switched to: {self.current_context}")
 
     def _rebuild_action_buttons(self):
         for widget in self.action_frame.winfo_children():
@@ -313,11 +318,10 @@ class RealTimeAnnotatorApp:
 
     def finish_here(self):
         if not self.active:
-            self._log_line("Finish Here: no active events.")
             return
         for label in list(self.active.keys()):
             self.stop_event(label)
-        self._log_line("Finish Here: all events stopped.")
+        self._log_full("Finish Here: all events stopped.")
 
     def toggle_event(self, label: str):
         if label in self.active:
@@ -341,7 +345,11 @@ class RealTimeAnnotatorApp:
         except Exception:
             pass
 
-        self._log_line(f"START ACTION | {label} | context={self.current_context} | t_rel={self.rel_time(t):.3f}s")
+        if not self._task_announced:
+            self._log_ui(f"→ {self.current_context}")
+            self._task_announced = True
+        self._log_ui(f"▶  START  {label}")
+        self._log_full(f"START ACTION | {label} | context={self.current_context} | t_rel={self.rel_time(t):.3f}s")
 
     def stop_event(self, label: str):
         if label not in self.active:
@@ -372,7 +380,8 @@ class RealTimeAnnotatorApp:
         except Exception:
             pass
 
-        self._log_line(
+        self._log_ui(f"■  STOP   {label}  ({ev.duration:.2f}s)")
+        self._log_full(
             f"END   ACTION | {label} | context={ev.context} | "
             f"[{ev.start_rel:.3f}, {ev.end_rel:.3f}] (dur={ev.duration:.3f}s) | note='{note}'"
         )
@@ -381,10 +390,15 @@ class RealTimeAnnotatorApp:
         self.elapsed_var.set(f"Elapsed: {self.now_abs() - self.session_start_abs:.3f} s")
         self.root.after(50, self._tick)
 
-    def _log_line(self, msg: str):
-        ts = time.strftime("%Y-%m-%d %H:%M:%S")
-        self.log.insert(tk.END, f"[{ts}] {msg}\n")
+    def _log_ui(self, msg: str):
+        """Write a simple human-readable line to the UI log widget only."""
+        self.log.insert(tk.END, msg + "\n")
         self.log.see(tk.END)
+
+    def _log_full(self, msg: str):
+        """Write a detailed timestamped line to the file log buffer only."""
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        self._file_log.append(f"[{ts}] {msg}\n")
 
     # -----------------------------
     # Save / Export
@@ -455,12 +469,13 @@ class RealTimeAnnotatorApp:
 
         # Log
         with open(log_path, "w", encoding="utf-8") as f:
-            f.write(self.log.get("1.0", tk.END))
+            f.writelines(self._file_log)
 
-        self._log_line(f"SAVED: {csv_path}")
-        self._log_line(f"SAVED: {json_path}")
-        self._log_line(f"SAVED: {meta_path}")
-        self._log_line(f"SAVED: {log_path}")
+        self._log_full(f"SAVED: {csv_path}")
+        self._log_full(f"SAVED: {json_path}")
+        self._log_full(f"SAVED: {meta_path}")
+        self._log_full(f"SAVED: {log_path}")
+        self._log_ui("Saved.")
         messagebox.showinfo("Saved", "Annotations saved successfully.")
 
     def on_close(self):
