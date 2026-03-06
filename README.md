@@ -1,156 +1,80 @@
-# Real-time Annotation Tool (Stage 1)
+# Real-time Annotation Tool — Version 2
 
-## Author
-This tool was implemented by **Jiayu Shang**.
+> For setup, requirements, and basic usage, see the [main branch README](../../blob/main/README.md) (Version 1).
 
-## Purpose
-This tool is used for **real-time, in-situ annotation** during data collection.
-It supports:
-
-- **Action-level events** (e.g. sit-to-stand, walking, turning)
-- **Activity-level events** (e.g. TUG, daily living activities)
-
-The annotator records **start and end timestamps** as events occur.
-These timestamps are later aligned with video recordings and wearable
-sensor data for further analysis.
-
-This tool is intended for **Stage 1 annotation**.
+This branch introduces a **room/context-aware** annotation model to replace the two-panel (action + activity) design of Version 1.
 
 ---
 
-## Current Function
+## What Changed in Version 2
 
-The current version of the real-time annotator provides the following functionality:
+### 1. Context (Room) replaces Activity-level
 
-- **Real-time annotation of action-level events**  
-  Records the start and end times of observable actions (e.g. sit-to-stand, walking, turning).
+Version 1 had two separate panels: **Action-level** and **Activity-level**.
 
-- **Real-time annotation of activity-level events**  
-  Supports higher-level activities (e.g. TUG, daily living activities) that may consist of multiple action-level events.
+Version 2 removes the Activity panel entirely and adds a **Context (Room)** button row at the top:
 
-- **Start / end timestamp recording with duration computation**  
-  Automatically records start and end timestamps for each event and computes event duration.
-
-- **Synchronization event marking**  
-  Allows marking a synchronization point (e.g. clapping) to establish a common temporal reference for aligning annotations with video and wearable sensor data.
-
-- **Keyboard shortcut–based interaction**  
-  Provides keyboard shortcuts to enable fast, low-distraction annotation during experiments.
-
-- **Session-level metadata logging**  
-  Stores session information, annotation labels, and synchronization metadata for downstream analysis.
-
-- **Structured data export**  
-  Exports annotations and metadata in CSV and JSON formats for post-processing.
-
-### Scope (Stage 1)
-
-This annotator is designed for **Stage 1 coarse, real-time annotation only**.  
-Fine-grained kinematic or clinical parameters—such as turning angle, step count,
-angular velocity, or balance-related measures—are **not annotated in this stage**
-and are obtained through offline analysis or wearable sensor data in later stages.
-
----
-
-## Requirements
-- Python **3.10 or higher**
-- Tkinter (included with standard Python distributions and conda)
-
-Verify Tkinter is available:
-```bash
-python -c "import tkinter; print('tk ok')"
+```
+[ Hall ]  [ Living Room ]  [ Kitchen ]  [ TUG ]  [ Turning Task ]  [ Finish Here ]
 ```
 
----
-
-## Before You Run
-Before starting the annotator, make sure the following conditions are met.
-
-### 1. Run locally
-The annotator must be run on a **local machine with a graphical desktop**.
-
-- macOS / Linux: Terminal
-- Windows: PowerShell or Command Prompt
-
-Do **not** run on a remote server or headless environment.
+You first select the current room/context, then annotate actions as before.
 
 ---
 
-### 2. Check Python version
-Confirm Python ≥ 3.10:
+### 2. Context switching auto-closes active events
 
-```bash
-python --version
-```
+When you click a different room button, all currently active events are **automatically stopped** before the context switches. This prevents events from spanning across rooms.
 
-If both `python` and `python3` exist, ensure you are using the one with
-Tkinter support.
+A **"Finish Here"** button is also provided to stop all active events without switching context.
 
 ---
 
-### 3. Navigate to the annotator directory
-Change to the folder containing `realtime_annotator.py`:
+### 3. Parallel events supported
 
-```bash
-cd path/to/annotator
-```
-
-Example:
-```bash
-cd ~/Downloads
-```
+Multiple action-level events can be active simultaneously (e.g. Walk and FoG at the same time).
 
 ---
 
-## How to Run
-Start the annotator with:
+### 4. Notes captured at event start
 
-```bash
-python realtime_annotator.py
-```
+In Version 1, notes were appended to the most recent active event after the fact.
+In Version 2, the note field content is **captured at event start** (when you press START / shortcut), so the note is stored with the event from the beginning.
 
-A graphical window should appear.
+Pressing Enter in the note field still attaches a timestamped note to all currently active events.
 
 ---
 
-## How to Use
+### 5. Data schema changes
 
-### Workflow
+The output CSV and JSON now use `context` and `action` instead of `level` and `label`:
 
-1. **Set Session Name**  
-   Example: `P01_TUG_2026-02-02`
+| Version 1 columns | Version 2 columns |
+|---|---|
+| `level`, `label` | `context`, `action` |
+| — | `start_datetime`, `end_datetime` (human-readable) |
 
-2. **Choose Output Folder**  
-   Recommended: one folder per participant or session.
-
-3. **Mark Sync (Clap)**  
-   At the synchronization event (e.g. participant claps), click  
-   **Mark Sync (Clap)** to establish the temporal reference (t = 0).
-
-4. **Annotate events**  
-   Use GUI buttons or keyboard shortcuts to **START / STOP** action-level
-   and activity-level events in real time.
-
-5. **Save annotations**  
-   Click **Save Now** at the end of the session.  
-   You will also be prompted to save when closing the window.
+`meta.json` now includes `"schema_version": 2` and `room_labels` instead of `activity_labels`.
 
 ---
 
-## Output Files
-For a session named `<session>`, the following files are generated:
+### 6. New output file: session log
+
+A `<session>_log.txt` file is now saved alongside the CSV/JSON/meta files, containing the full in-app log with full date-time timestamps.
+
+---
+
+### 7. Minor label change
+
+`FoG` is renamed to `Freezing of Gait (FoG)` for clarity.
+
+---
+
+## Output Files (Version 2)
+
+For a session named `<session>`:
 
 - `<session>_annotations.csv`
 - `<session>_annotations.json`
 - `<session>_meta.json`
-
----
-
-## Timestamp Definition
-- All timestamps are recorded in **seconds**
-- If a sync event is marked, timestamps are **relative to sync time**
-- Otherwise, timestamps are **relative to session start**
-
-Absolute timestamps are also stored for cross-device alignment.
-
----
+- `<session>_log.txt` *(new in v2)*
