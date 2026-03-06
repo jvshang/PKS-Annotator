@@ -4,8 +4,9 @@
 
 | Branch | Description |
 |---|---|
-| `main` (this) | Version 1 — action-level + activity-level two-panel annotator |
+| [`version1`](../../tree/version1) | Version 1 — action-level + activity-level two-panel annotator |
 | [`version2`](../../tree/version2) | Version 2 — context/room-aware annotator; replaces activity panel with room buttons |
+| [`version3`](../../tree/version3) | Version 3 — protocol-driven configuration; sequential task navigator replaces room buttons |
 
 ---
 
