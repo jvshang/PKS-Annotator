@@ -1,6 +1,6 @@
-# Real-time Annotation Tool — Version 2
+# Real-time Annotation Tool (Version 2)
 
-> For setup, requirements, and basic usage, see the [main branch README](../../blob/main/README.md) (Version 1).
+> For setup, requirements, and basic usage, see the [main branch README](../../blob/main/README.md).
 
 This branch introduces a **room/context-aware** annotation model to replace the two-panel (action + activity) design of Version 1.
 
