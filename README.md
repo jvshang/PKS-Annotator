@@ -1,4 +1,13 @@
-# Real-time Annotation Tool (Stage 1)
+# Real-time Annotation Tool
+
+## Versions
+
+| Branch | Description |
+|---|---|
+| `main` (this) | Version 1 — action-level + activity-level two-panel annotator |
+| [`version2`](../../tree/version2) | Version 2 — context/room-aware annotator; replaces activity panel with room buttons |
+
+---
 
 ## Author
 This tool was implemented by **Jiayu Shang**.
