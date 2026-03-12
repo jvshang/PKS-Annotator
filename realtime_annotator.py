@@ -66,6 +66,7 @@ class RealTimeAnnotatorApp:
         self.events: List[Event] = []
         # active: action_label -> {"context": context, "start_abs": t, "note": ""}
         self.active: Dict[str, Dict] = {}
+        self.clap_abs_times: List[float] = []
 
         # File log buffer (detailed, saved to _log.txt)
         self._file_log: List[str] = []
@@ -125,7 +126,8 @@ class RealTimeAnnotatorApp:
         ttk.Label(timing, text="   ").pack(side="left")
         ttk.Label(timing, textvariable=self.sync_var, font=("Arial", 11)).pack(side="left")
 
-        ttk.Button(timing, text="Mark Sync (Clap)", command=self.mark_sync).pack(side="right")
+        ttk.Button(timing, text="Mark Sync", command=self.mark_sync).pack(side="right")
+        ttk.Button(timing, text="Clap", command=self.mark_clap).pack(side="right", padx=(0, 8))
         ttk.Button(timing, text="Save Now", command=self.save_files).pack(side="right", padx=(0, 8))
 
         # Task navigation row
@@ -311,6 +313,24 @@ class RealTimeAnnotatorApp:
         self._log_ui("Sync marked  (t = 0)")
         self._log_full("SYNC marked. Relative timestamps now reference this moment (t=0).")
 
+    def mark_clap(self):
+        t = self.now_abs()
+        t_rel = self.rel_time(t)
+        self.clap_abs_times.append(t)
+        ev = Event(
+            context=self.current_context,
+            action="Clap",
+            start_abs=t,
+            end_abs=t,
+            start_rel=t_rel,
+            end_rel=t_rel,
+            duration=0.0,
+            note="clap marker"
+        )
+        self.events.append(ev)
+        self._log_ui(f"👏 CLAP  (@{t_rel:.3f}s)")
+        self._log_full(f"CLAP | context={self.current_context} | t_abs={t:.6f} | t_rel={t_rel:.3f}s")
+
     def prev_task(self):
         if self.task_index > 0:
             self._go_to_task(self.task_index - 1)
@@ -495,6 +515,7 @@ class RealTimeAnnotatorApp:
             "created_local_time": time.strftime("%Y-%m-%d %H:%M:%S"),
             "session_start_abs_epoch": self.session_start_abs,
             "sync_t0_abs_epoch": self.sync_t0_abs,
+            "clap_abs_epochs": self.clap_abs_times,
             "relative_time_base": "sync_t0 if set else session_start",
             "tasks": TASKS,
             "schema_version": 3,
