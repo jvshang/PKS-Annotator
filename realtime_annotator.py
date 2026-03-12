@@ -176,6 +176,11 @@ class RealTimeAnnotatorApp:
 
         self._build_label_buttons(self.action_frame, labels=self.current_task["actions"])
 
+        # Remark buttons (instant mark, no start/stop)
+        self.remark_frame = ttk.LabelFrame(left, text="Remarks (instant mark)", padding=10)
+        self.remark_frame.pack(fill="x", pady=(10, 0))
+        self._build_remark_buttons(self.remark_frame, labels=self.current_task.get("remarks", []))
+
         # Log (right panel)
         log_frame = ttk.LabelFrame(main, text="Log", padding=10)
         log_frame.pack(side="right", fill="both", expand=True, padx=(10, 0))
@@ -210,6 +215,33 @@ class RealTimeAnnotatorApp:
             attr_label = label.replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "")
             setattr(self, f"btn_{attr_label}", btn)
             setattr(self, f"status_{attr_label}", status)
+
+    def _build_remark_buttons(self, parent, labels: List[str]):
+        for label in labels:
+            row = ttk.Frame(parent)
+            row.pack(fill="x", pady=4)
+            ttk.Label(row, text=label, width=36).pack(side="left")
+            ttk.Button(row, text="Mark", command=lambda l=label: self.mark_remark(l)).pack(side="left")
+
+    def mark_remark(self, label: str):
+        t = self.now_abs()
+        t_rel = self.rel_time(t)
+        ev = Event(
+            context=self.current_context,
+            action=label,
+            start_abs=t,
+            end_abs=t,
+            start_rel=t_rel,
+            end_rel=t_rel,
+            duration=0.0,
+            note="instant mark"
+        )
+        self.events.append(ev)
+        if not self._task_announced:
+            self._log_ui(f"→ {self.current_context}")
+            self._task_announced = True
+        self._log_ui(f"◆  MARK   {label}  (@{t_rel:.2f}s)")
+        self._log_full(f"REMARK | {label} | context={self.current_context} | t_rel={t_rel:.3f}s")
 
     def attach_note(self, event=None):
         text = self.note_entry.get().strip()
@@ -306,6 +338,9 @@ class RealTimeAnnotatorApp:
         for widget in self.action_frame.winfo_children():
             widget.destroy()
         self._build_label_buttons(self.action_frame, labels=self.current_task["actions"])
+        for widget in self.remark_frame.winfo_children():
+            widget.destroy()
+        self._build_remark_buttons(self.remark_frame, labels=self.current_task.get("remarks", []))
 
     def _update_task_ui(self):
         t = self.current_task
