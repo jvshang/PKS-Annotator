@@ -307,11 +307,23 @@ class RealTimeAnnotatorApp:
 
     def mark_sync(self):
         self.sync_t0_abs = self.now_abs()
+        t_rel = self.rel_time(self.sync_t0_abs)
         self.sync_var.set(
-            f"Sync t0: SET at elapsed {self.rel_time(self.sync_t0_abs):.3f} s (this will show as 0.000s base)"
+            f"Sync t0: SET at elapsed {t_rel:.3f} s (this will show as 0.000s base)"
         )
-        self._log_ui("Sync marked  (t = 0)")
-        self._log_full("SYNC marked. Relative timestamps now reference this moment (t=0).")
+        ev = Event(
+            context=self.current_context,
+            action="Sync",
+            start_abs=self.sync_t0_abs,
+            end_abs=self.sync_t0_abs,
+            start_rel=t_rel,
+            end_rel=t_rel,
+            duration=0.0,
+            note="sync marker"
+        )
+        self.events.append(ev)
+        self._log_ui(f"🔄 SYNC  (@{t_rel:.3f}s)")
+        self._log_full(f"SYNC | context={self.current_context} | t_abs={self.sync_t0_abs:.6f} | t_rel={t_rel:.3f}s")
 
     def mark_clap(self):
         t = self.now_abs()
